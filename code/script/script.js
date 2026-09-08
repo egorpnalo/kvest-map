@@ -107,3 +107,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Получаем элементы кнопок
+    const addAttrBtn = document.getElementById('add-attr-btn');
+    const deleteAttrBtn = document.getElementById('delete-attr-btn');
+    
+    // Получаем элементы модального окна
+    const modalOverlay = document.getElementById('attr-modal');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    // 1. Открыть окно при нажатии на "Добавить атрибут"
+    addAttrBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+    });
+
+    // 2. Заглушка для кнопки "Удалить атрибут"
+    deleteAttrBtn.addEventListener('click', () => {
+        alert('Функция удаления атрибута пока находится в разработке (заглушка).');
+    });
+
+    // 3. Закрыть окно при нажатии на "Отменить"
+    cancelBtn.addEventListener('click', () => {
+        closeModal();
+    });
+
+    // 4. Заглушка для кнопки "Сохранить"
+    saveBtn.addEventListener('click', () => {
+        // В будущем здесь будет логика сбора данных (name, quantity, photo и т.д.) 
+        // и их отправка в базу данных (например, MongoDB).
+        
+        alert('Данные успешно сохранены (заглушка)!');
+        closeModal();
+    });
+
+    // Вспомогательная функция для скрытия окна и очистки полей
+    function closeModal() {
+        modalOverlay.style.display = 'none';
+        
+        // Очищаем форму, чтобы при следующем открытии она была пустой
+        document.getElementById('attr-photo').value = '';
+        document.getElementById('attr-name').value = '';
+        document.getElementById('attr-quantity').value = '';
+        document.getElementById('attr-desc').value = '';
+        document.getElementById('attr-note').value = '';
+    }
+});
