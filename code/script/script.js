@@ -1,86 +1,109 @@
-const canvas = document.getElementById('canvas');
-const addBtn = document.getElementById('add-block-btn');
+document.addEventListener('DOMContentLoaded', () => {
+    // === Логика переключения отделов (вкладок) ===
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('.section-content');
 
-// Счетчик для слоев, чтобы активный блок всегда был поверх остальных
-let zIndexCounter = 1;
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
 
-addBtn.addEventListener('click', createBlock);
+            // Переключаем активную кнопку
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
 
-function createBlock() {
-    // Создаем основной контейнер блока
-    const block = document.createElement('div');
-    block.className = 'text-block';
-    
-    // Задаем появление в случайном месте ближе к центру или левому верхнему углу
-    const x = Math.random() * 200 + 50;
-    const y = Math.random() * 200 + 80;
-    block.style.left = `${x}px`;
-    block.style.top = `${y}px`;
-    block.style.zIndex = zIndexCounter++;
+            // Переключаем видимость отделов
+            sections.forEach(section => {
+                if (section.id === targetTab) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        });
+    });
 
-    // Создаем шапку блока (за которую будем таскать)
-    const header = document.createElement('div');
-    header.className = 'text-block-header';
-    
-    // Кнопка удаления
-    const deleteBtn = document.createElement('span');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = '&times;';
-    deleteBtn.onclick = function() {
-        block.remove();
-    };
+    // === Логика работы с полотном (Отдел 1) ===
+    const canvas = document.getElementById('canvas');
+    const addBtn = document.getElementById('add-block-btn');
 
-    header.appendChild(deleteBtn);
-    
-    // Создаем текстовую область
-    const textarea = document.createElement('textarea');
-    textarea.className = 'text-block-content';
-    textarea.placeholder = 'Введите текст...';
+    let zIndexCounter = 1;
 
-    // Собираем элементы вместе
-    block.appendChild(header);
-    block.appendChild(textarea);
-    canvas.appendChild(block);
-
-    // Добавляем возможность перетаскивания
-    makeDraggable(block, header);
-}
-
-function makeDraggable(element, handle) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    
-    // Перетаскивание начинается при клике на шапку
-    handle.onmousedown = dragMouseDown;
-
-    function dragMouseDown(e) {
-        e.preventDefault();
-        // При клике выводим блок на передний план
-        element.style.zIndex = zIndexCounter++;
-        
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
+    if (addBtn) {
+        addBtn.addEventListener('click', createBlock);
     }
 
-    function elementDrag(e) {
-        e.preventDefault();
+    function createBlock() {
+        // Создаем основной контейнер блока
+        const block = document.createElement('div');
+        block.className = 'text-block';
         
-        // Вычисляем новую позицию курсора
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+        // Случайные начальные координаты появления
+        const x = Math.random() * 200 + 50;
+        const y = Math.random() * 200 + 80;
+        block.style.left = `${x}px`;
+        block.style.top = `${y}px`;
+        block.style.zIndex = zIndexCounter++;
+
+        // Шапка блока
+        const header = document.createElement('div');
+        header.className = 'text-block-header';
         
-        // Устанавливаем новые координаты элементу
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
+        // Кнопка удаления
+        const deleteBtn = document.createElement('span');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.onclick = function() {
+            block.remove();
+        };
+
+        header.appendChild(deleteBtn);
+        
+        // Текстовая область
+        const textarea = document.createElement('textarea');
+        textarea.className = 'text-block-content';
+        textarea.placeholder = 'Введите текст...';
+
+        // Собираем блок
+        block.appendChild(header);
+        block.appendChild(textarea);
+        canvas.appendChild(block);
+
+        // Включаем Drag-and-Drop
+        makeDraggable(block, header);
     }
 
-    function closeDragElement() {
-        // Очищаем события при отпускании мыши
-        document.onmouseup = null;
-        document.onmousemove = null;
+    function makeDraggable(element, handle) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        
+        handle.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e.preventDefault();
+            // Выводим перетаскиваемый элемент поверх остальных
+            element.style.zIndex = zIndexCounter++;
+            
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
     }
-}
+});

@@ -8,9 +8,67 @@ body, html {
     width: 100%;
     height: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden; 
+    overflow: hidden;
     background-color: #f0f2f5;
-    /* Сетка на фоне для визуального эффекта доски */
+}
+
+/* Верхняя панель переключения отделов */
+.navbar {
+    height: 50px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+    z-index: 10000;
+    position: relative;
+}
+
+.nav-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    background-color: #f0f2f5;
+    color: #000;
+}
+
+.nav-btn.active {
+    background-color: #e6f0ff;
+    color: #0066ff;
+}
+
+/* Контейнер для секций */
+.content-container {
+    width: 100%;
+    height: calc(100vh - 50px);
+    position: relative;
+}
+
+.section-content {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.section-content.active {
+    display: block;
+}
+
+/* === Стили Отдела 1 (Полотно) === */
+#section-1 {
     background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
     background-size: 20px 20px;
 }
@@ -22,7 +80,7 @@ body, html {
     z-index: 9999;
 }
 
-button {
+#add-block-btn {
     padding: 10px 20px;
     font-size: 14px;
     font-weight: bold;
@@ -31,40 +89,41 @@ button {
     color: white;
     border: none;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.2s;
 }
 
-button:hover {
+#add-block-btn:hover {
     background-color: #0052cc;
 }
 
 #canvas {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     position: relative;
 }
 
+/* Стили текстового блока (карточки) */
 .text-block {
     position: absolute;
     width: 220px;
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
 }
 
 .text-block-header {
-    height: 20px;
+    height: 24px;
     background-color: #e4e6eb;
     border-radius: 8px 8px 0 0;
     cursor: grab;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 0 5px;
+    padding: 0 8px;
 }
 
 .text-block-header:active {
@@ -74,9 +133,9 @@ button:hover {
 .delete-btn {
     cursor: pointer;
     color: #888;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
-    padding: 0 5px;
+    line-height: 1;
 }
 
 .delete-btn:hover {

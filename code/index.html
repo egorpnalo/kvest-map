@@ -7,12 +7,33 @@
     <link rel="stylesheet" href="style/styles.css">
 </head>
 <body>
-    <div class="toolbar">
-        <button id="add-block-btn">+ Добавить блок</button>
-    </div>
-    
-    <!-- Полотно, на котором будут размещаться блоки -->
-    <div id="canvas"></div>
+    <!-- Навигация по отделам -->
+    <nav class="navbar">
+        <button class="nav-btn active" data-tab="section-1">Отдел 1: Полотно</button>
+        <button class="nav-btn" data-tab="section-2">Отдел 2</button>
+        <button class="nav-btn" data-tab="section-3">Отдел 3</button>
+    </nav>
+
+    <!-- Основной контейнер с отделами -->
+    <main class="content-container">
+        <!-- Отдел 1: Интерактивное полотно -->
+        <section id="section-1" class="section-content active">
+            <div class="toolbar">
+                <button id="add-block-btn">+ Добавить блок</button>
+            </div>
+            <div id="canvas"></div>
+        </section>
+
+        <!-- Отдел 2: Пока пустой -->
+        <section id="section-2" class="section-content">
+            <!-- Место для будущего контента -->
+        </section>
+
+        <!-- Отдел 3: Пока пустой -->
+        <section id="section-3" class="section-content">
+            <!-- Место для будущего контента -->
+        </section>
+    </main>
 
     <script src="script/script.js"></script>
 </body>
