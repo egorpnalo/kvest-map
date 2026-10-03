@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================================
-    // 3. Работа с Атрибутами и предметами (Отдел 3 + API)
+    // 3. Отдел 3: Атрибуты и работы с API (FormData для файлов)
     // ==========================================================
     const addAttrBtn = document.getElementById('add-attr-btn');
     const modalOverlay = document.getElementById('attr-modal');
@@ -102,41 +102,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const attrForm = document.getElementById('attr-form');
     const attributesList = document.getElementById('attributes-list');
 
-    // Открыть модальное окно
     if (addAttrBtn) {
         addAttrBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'flex';
         });
     }
 
-    // Закрыть модальное окно
     if (cancelBtn) {
         cancelBtn.addEventListener('click', closeModal);
     }
 
-    // Сохранить атрибут в БД через POST запрос
+    // Сохранение формы с файлом в формате multipart/form-data
     if (attrForm) {
         attrForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const itemData = {
-                name: document.getElementById('attr-name').value,
-                photoUrl: document.getElementById('attr-photo').value,
-                quantity: Number(document.getElementById('attr-quantity').value) || 1,
-                description: document.getElementById('attr-desc').value,
-                note: document.getElementById('attr-note').value
-            };
+            const formData = new FormData();
+            const photoInput = document.getElementById('attr-photo');
+
+            if (photoInput.files[0]) {
+                formData.append('photo', photoInput.files[0]);
+            }
+
+            formData.append('name', document.getElementById('attr-name').value);
+            formData.append('quantity', document.getElementById('attr-quantity').value || 1);
+            formData.append('description', document.getElementById('attr-desc').value);
+            formData.append('note', document.getElementById('attr-note').value);
 
             try {
                 const response = await fetch('/api/items', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(itemData)
+                    body: formData
                 });
 
                 if (response.ok) {
                     closeModal();
-                    loadAttributes(); // Перерисовать список элементов
+                    loadAttributes();
                 } else {
                     const err = await response.json();
                     alert('Ошибка сохранения: ' + err.error);
@@ -153,13 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         attrForm.reset();
     }
 
-    // Загрузить все атрибуты из базы данных и отрисовать их
     async function loadAttributes() {
         try {
             const response = await fetch('/api/items');
             const items = await response.json();
 
-            attributesList.innerHTML = ''; // Очищаем контейнер
+            attributesList.innerHTML = '';
 
             items.forEach(item => {
                 const card = document.createElement('div');
@@ -179,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Глобальная функция для удаления атрибута
     window.deleteAttribute = async (id) => {
         if (!confirm('Вы уверены, что хотите удалить этот атрибут?')) return;
 
@@ -193,6 +192,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Первоначальная загрузка данных при старте страницы
     loadAttributes();
 });
