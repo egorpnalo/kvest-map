@@ -270,3 +270,46 @@ body, html {
     gap: 10px;
     margin-top: 10px;
 }
+
+
+/* Выбор предметов в модальном окне */
+.items-checkbox-list {
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: #fafafa;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Бейджики предметов на карточке активности */
+.act-items-container {
+    margin-top: 5px;
+}
+
+.items-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.item-tag {
+    background-color: #e6f0ff;
+    color: #0066ff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
