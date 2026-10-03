@@ -94,7 +94,138 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================================
-    // 3. Отдел 3: Атрибуты и работы с API (FormData для файлов)
+    // 3. Отдел 2: Активности
+    // ==========================================================
+    const addActBtn = document.getElementById('add-act-btn');
+    const actModal = document.getElementById('act-modal');
+    const actCancelBtn = document.getElementById('act-cancel-btn');
+    const actForm = document.getElementById('act-form');
+    const activitiesList = document.getElementById('activities-list');
+    const actItemsSelect = document.getElementById('act-items-select');
+
+    if (addActBtn) {
+        addActBtn.addEventListener('click', async () => {
+            await populateItemsCheckboxList();
+            actModal.style.display = 'flex';
+        });
+    }
+
+    if (actCancelBtn) {
+        actCancelBtn.addEventListener('click', () => {
+            actModal.style.display = 'none';
+            actForm.reset();
+        });
+    }
+
+    // Загрузить доступные атрибуты для выбора в модалке
+    async function populateItemsCheckboxList() {
+        try {
+            const response = await fetch('/api/items');
+            const items = await response.json();
+            actItemsSelect.innerHTML = '';
+
+            if (items.length === 0) {
+                actItemsSelect.innerHTML = '<small style="color: #888;">Нет созданных атрибутов</small>';
+                return;
+            }
+
+            items.forEach(item => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-item';
+                label.innerHTML = `
+                    <input type="checkbox" value="${item._id}">
+                    <span>${item.name} (${item.quantity} шт.)</span>
+                `;
+                actItemsSelect.appendChild(label);
+            });
+        } catch (err) {
+            console.error('Ошибка загрузки предметов для модалки:', err);
+        }
+    }
+
+    // Сохранение активности
+    if (actForm) {
+        actForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const selectedItems = Array.from(
+                actItemsSelect.querySelectorAll('input[type="checkbox"]:checked')
+            ).map(cb => Number(cb.value));
+
+            const payload = {
+                title: document.getElementById('act-title').value,
+                durationMinutes: Number(document.getElementById('act-duration').value) || 0,
+                description: document.getElementById('act-desc').value,
+                items: selectedItems
+            };
+
+            try {
+                const response = await fetch('/api/activities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    actModal.style.display = 'none';
+                    actForm.reset();
+                    loadActivities();
+                } else {
+                    const err = await response.json();
+                    alert('Ошибка: ' + err.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось сохранить активность');
+            }
+        });
+    }
+
+    // Отрисовка всех активностей
+    async function loadActivities() {
+        try {
+            const response = await fetch('/api/activities');
+            const activities = await response.json();
+
+            activitiesList.innerHTML = '';
+
+            activities.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'attr-card';
+
+                const itemsBadgeHtml = act.items && act.items.length > 0
+                    ? `<div class="items-tags">${act.items.map(i => `<span class="item-tag">${i.name}</span>`).join('')}</div>`
+                    : '<p><small>Предметы не требуются</small></p>';
+
+                card.innerHTML = `
+                    <h4>${act.title}</h4>
+                    <p><strong>⏱ Время:</strong> ${act.durationMinutes} мин.</p>
+                    ${act.description ? `<p>${act.description}</p>` : ''}
+                    <div class="act-items-container">
+                        <strong>Предметы:</strong>
+                        ${itemsBadgeHtml}
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteActivity(${act._id})">Удалить</button>
+                `;
+                activitiesList.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Ошибка загрузки активностей:', err);
+        }
+    }
+
+    window.deleteActivity = async (id) => {
+        if (!confirm('Удалить эту активность?')) return;
+        try {
+            const res = await fetch(`/api/activities/${id}`, { method: 'DELETE' });
+            if (res.ok) loadActivities();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // ==========================================================
+    // 4. Отдел 3: Атрибуты и материалы
     // ==========================================================
     const addAttrBtn = document.getElementById('add-attr-btn');
     const modalOverlay = document.getElementById('attr-modal');
@@ -112,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.addEventListener('click', closeModal);
     }
 
-    // Сохранение формы с файлом в формате multipart/form-data
     if (attrForm) {
         attrForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -170,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>Количество:</strong> ${item.quantity}</p>
                     ${item.description ? `<p>${item.description}</p>` : ''}
                     ${item.note ? `<small><em>Заметка: ${item.note}</em></small>` : ''}
-                    <button class="btn btn-danger btn-sm" onclick="deleteAttribute('${item._id}')">Удалить</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAttribute(${item._id})">Удалить</button>
                 `;
                 attributesList.appendChild(card);
             });
@@ -192,5 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Загружаем атрибуты и активности при открытии приложения
     loadAttributes();
+    loadActivities();
 });
