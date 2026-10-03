@@ -155,64 +155,118 @@ body, html {
     background: transparent;
 }
 
+/* === Кнопки и Сетка Карточек (Отдел 3) === */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px 10px 30px;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 20px 30px;
+    overflow-y: auto;
+    max-height: calc(100vh - 130px);
+}
+
+.attr-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.attr-card h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.attr-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.attr-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #f7f7f7;
+}
+
 .btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-            transition: opacity 0.2s;
-        }
-        .btn:hover { opacity: 0.8; }
-        .btn-primary { background-color: #0066ff; }
-        .btn-danger { background-color: #ff4d4f; margin-left: 10px; }
-        .btn-secondary { background-color: #d9d9d9; color: #333; }
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    transition: opacity 0.2s;
+}
 
-        /* Стили модального окна (фон) */
-        .modal-overlay {
-            display: none; /* Скрыто по умолчанию */
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background-color: #0066ff; }
+.btn-danger { background-color: #ff4d4f; }
+.btn-secondary { background-color: #d9d9d9; color: #333; }
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-top: 5px;
+    align-self: flex-start;
+}
 
-        /* Стили самой карточки модального окна */
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 350px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+/* Стили модального окна */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
 
-        .modal-content h3 { margin: 0 0 10px 0; }
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+.modal-content h3 { margin: 0 0 10px 0; }
 
-        .form-group label { font-size: 13px; font-weight: 600; color: #555; }
-        
-        .form-group input, .form-group textarea {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-family: inherit;
-        }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
-        }
+.form-group label { font-size: 13px; font-weight: 600; color: #555; }
+
+.form-group input, .form-group textarea {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
