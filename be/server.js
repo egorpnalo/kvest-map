@@ -41,7 +41,8 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS plots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    description TEXT DEFAULT ''
+    description TEXT DEFAULT '',
+    canvasData TEXT DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS plot_activities (
@@ -53,8 +54,12 @@ db.exec(`
   );
 `);
 
+// Миграции колонок при перезапуске
+try { db.exec(`ALTER TABLE activities ADD COLUMN description TEXT DEFAULT ''`); } catch (e) {}
+try { db.exec(`ALTER TABLE plots ADD COLUMN canvasData TEXT DEFAULT ''`); } catch (e) {}
+
 // ==========================================
-// 2. НАСТРОЙКА ПАПКИ sourse/pic И MULTER
+// 2. НАСТРОЙКА ХРАНИЛИЩА ФАЙЛОВ
 // ==========================================
 const uploadDir = path.join(__dirname, '../sourse/pic');
 if (!fs.existsSync(uploadDir)) {
@@ -125,7 +130,6 @@ app.delete('/api/items/:id', (req, res) => {
 app.get('/api/activities', (req, res) => {
   try {
     const activities = db.prepare('SELECT id AS _id, title, durationMinutes, description FROM activities').all();
-
     const result = activities.map(act => {
       const items = db.prepare(`
         SELECT i.id AS _id, i.name, i.photoUrl, i.quantity
@@ -135,7 +139,6 @@ app.get('/api/activities', (req, res) => {
       `).all(act._id);
       return { ...act, items };
     });
-
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -173,7 +176,7 @@ app.delete('/api/activities/:id', (req, res) => {
 // --- СЮЖЕТЫ (PLOTS) ---
 app.get('/api/plots', (req, res) => {
   try {
-    const plots = db.prepare('SELECT id AS _id, title, description FROM plots').all();
+    const plots = db.prepare('SELECT id AS _id, title, description, canvasData FROM plots').all();
     const result = plots.map(plot => {
       const activities = db.prepare(`
         SELECT a.id AS _id, a.title, a.durationMinutes, a.description
@@ -186,6 +189,35 @@ app.get('/api/plots', (req, res) => {
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/plots', (req, res) => {
+  try {
+    const { title, description, canvasData, activityIds } = req.body;
+    const stmt = db.prepare('INSERT INTO plots (title, description, canvasData) VALUES (?, ?, ?)');
+    const info = stmt.run(title || 'Без названия', description || '', canvasData || '');
+    const plotId = info.lastInsertRowid;
+
+    if (Array.isArray(activityIds)) {
+      const insertRelation = db.prepare('INSERT INTO plot_activities (plot_id, activity_id) VALUES (?, ?)');
+      for (const actId of activityIds) {
+        insertRelation.run(plotId, actId);
+      }
+    }
+
+    res.status(201).json({ _id: plotId, title, description, canvasData });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/plots/:id', (req, res) => {
+  try {
+    db.prepare('DELETE FROM plots WHERE id = ?').run(req.params.id);
+    res.json({ message: 'Сюжет удален' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

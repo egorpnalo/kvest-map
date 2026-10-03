@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style/styles.css">
 </head>
 <body>
-    <!-- Навигация по отделам -->
     <nav class="navbar">
         <button class="nav-btn active" data-tab="section-1">Составление сюжетов</button>
         <button class="nav-btn" data-tab="section-2">Активности</button>
@@ -15,14 +14,52 @@
         <button class="nav-btn" data-tab="section-4">Готовые сюжеты</button>
     </nav>
 
-    <!-- Основной контейнер -->
     <main class="content-container">
         <!-- Отдел 1: Интерактивное полотно -->
         <section id="section-1" class="section-content active">
             <div class="toolbar">
-                <button id="add-block-btn" class="btn btn-primary">+ Добавить блок</button>
+                <button id="add-block-btn" class="btn btn-primary">+ Добавить текст</button>
+                <button id="add-act-canvas-btn" class="btn btn-primary">+ Добавить активность</button>
+                <button id="connect-mode-btn" class="btn btn-secondary">🔗 Связать блоки</button>
+                <button id="clear-canvas-btn" class="btn btn-danger">Очистить полотно</button>
+                <button id="save-plot-btn" class="btn btn-success">💾 Сохранить сюжет</button>
             </div>
-            <div id="canvas"></div>
+            
+            <div id="canvas">
+                <svg id="canvas-svg"></svg>
+            </div>
+
+            <!-- Модальное окно выбора активности на полотно -->
+            <div id="select-act-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <h3>Выберите активность для полотна</h3>
+                    <div id="canvas-act-list" class="canvas-act-select-grid"></div>
+                    <div class="modal-actions">
+                        <button type="button" id="select-act-cancel" class="btn btn-secondary">Отмена</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Модальное окно сохранения сюжета -->
+            <div id="save-plot-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <h3>Сохранение сюжета</h3>
+                    <form id="save-plot-form">
+                        <div class="form-group">
+                            <label for="plot-title">Название сюжета *:</label>
+                            <input type="text" id="plot-title" required placeholder="Например: Квест в замке">
+                        </div>
+                        <div class="form-group">
+                            <label for="plot-desc">Описание сюжета:</label>
+                            <textarea id="plot-desc" rows="3" placeholder="Краткое аннотирование сюжета..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" id="save-plot-cancel" class="btn btn-secondary">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Сохранить в БД</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </section>
 
         <!-- Отдел 2: Активности -->
@@ -32,37 +69,28 @@
                 <button id="add-act-btn" class="btn btn-primary">Добавить активность</button>
             </div>
 
-            <!-- Контейнер для карточек активностей -->
             <div id="activities-list" class="cards-grid"></div>
 
-            <!-- Всплывающее окно для активностей -->
             <div id="act-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
                     <h3>Новая активность</h3>
-                    
                     <form id="act-form">
                         <div class="form-group">
                             <label for="act-title">Название активности *:</label>
                             <input type="text" id="act-title" required placeholder="Введите название">
                         </div>
-                        
                         <div class="form-group">
                             <label for="act-duration">Время на выполнение (в минутах):</label>
                             <input type="number" id="act-duration" value="15" min="1" placeholder="15">
                         </div>
-
                         <div class="form-group">
                             <label for="act-desc">Описание:</label>
                             <textarea id="act-desc" rows="2" placeholder="Подробности активности..."></textarea>
                         </div>
-                        
                         <div class="form-group">
                             <label>Выберите требуемые предметы:</label>
-                            <div id="act-items-select" class="items-checkbox-list">
-                                <!-- Чекбоксы атрибутов загрузятся динамически -->
-                            </div>
+                            <div id="act-items-select" class="items-checkbox-list"></div>
                         </div>
-
                         <div class="modal-actions">
                             <button type="button" id="act-cancel-btn" class="btn btn-secondary">Отменить</button>
                             <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -84,33 +112,27 @@
             <div id="attr-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content">
                     <h3>Новый атрибут</h3>
-                    
                     <form id="attr-form">
                         <div class="form-group">
                             <label for="attr-photo">Выбрать фото с компьютера:</label>
                             <input type="file" id="attr-photo" accept="image/*">
                         </div>
-                        
                         <div class="form-group">
                             <label for="attr-name">Название *:</label>
                             <input type="text" id="attr-name" required placeholder="Введите название">
                         </div>
-                        
                         <div class="form-group">
                             <label for="attr-quantity">Количество:</label>
                             <input type="number" id="attr-quantity" value="1" min="1" placeholder="1">
                         </div>
-                        
                         <div class="form-group">
                             <label for="attr-desc">Описание:</label>
                             <textarea id="attr-desc" rows="2" placeholder="Краткое описание"></textarea>
                         </div>
-                        
                         <div class="form-group">
                             <label for="attr-note">Заметка:</label>
                             <textarea id="attr-note" rows="2" placeholder="Дополнительная информация"></textarea>
                         </div>
-
                         <div class="modal-actions">
                             <button type="button" id="cancel-btn" class="btn btn-secondary">Отменить</button>
                             <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -122,7 +144,9 @@
 
         <!-- Отдел 4: Готовые сюжеты -->
         <section id="section-4" class="section-content">
-            <h2>Отдел 4: Готовые сюжеты</h2>
+            <div class="section-header">
+                <h2>Отдел 4: Готовые сюжеты</h2>
+            </div>
             <div id="plots-list" class="cards-grid"></div>
         </section>
     </main>
