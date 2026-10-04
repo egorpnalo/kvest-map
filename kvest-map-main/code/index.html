@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор квестов</title>
+    <link rel="icon" href="img/mospolytech-logo.jpg">
+    <link rel="stylesheet" href="style/styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <img src="img/mospolytech-logo.jpg" alt="Московский политех" class="brand-logo">
+            <div class="brand-text">
+                <span class="brand-name">Конструктор квестов</span>
+                <span class="brand-sub">в Московском Политехе</span>
+            </div>
+        </div>
+
+        <nav class="navbar">
+            <button class="nav-btn active" data-tab="section-1">Составление сюжетов</button>
+            <button class="nav-btn" data-tab="section-2">Активности <span class="nav-count" id="count-activities">0</span></button>
+            <button class="nav-btn" data-tab="section-3">Атрибуты и материалы <span class="nav-count" id="count-items">0</span></button>
+            <button class="nav-btn" data-tab="section-4">Готовые сюжеты <span class="nav-count" id="count-plots">0</span></button>
+        </nav>
+    </header>
+
+    <div id="server-banner" class="server-banner" hidden>
+        <strong>Нет связи с сервером.</strong>
+        Данные не загружаются и не сохраняются. Запустите сервер: в папке <code>be</code> выполните <code>npm start</code>
+        и откройте <a href="http://localhost:3000">http://localhost:3000</a>.
+        <button type="button" id="server-retry" class="btn btn-light btn-sm">Повторить</button>
+    </div>
+
+    <main class="content-container">
+        <!-- Составление сюжетов -->
+        <section id="section-1" class="section-content active">
+            <div class="toolbar">
+                <div class="toolbar-info">
+                    <span class="toolbar-label">Сюжет</span>
+                    <span id="current-plot-name" class="toolbar-plot-name">Новый сюжет</span>
+                    <span id="unsaved-dot" class="unsaved-dot" title="Есть несохранённые изменения" hidden></span>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="add-block-btn" class="btn btn-green">Добавить текст</button>
+                    <button id="add-act-canvas-btn" class="btn btn-green">Добавить активность</button>
+                    <span class="toolbar-divider"></span>
+                    <button id="connect-mode-btn" class="btn btn-blue">Связать блоки</button>
+                    <button id="save-plot-btn" class="btn btn-blue">Сохранить сюжет</button>
+                    <span class="toolbar-divider"></span>
+                    <button id="clear-canvas-btn" class="btn btn-outline-danger">Очистить полотно</button>
+                </div>
+            </div>
+
+            <div class="canvas-wrap">
+                <div id="canvas-viewport" class="canvas-viewport">
+                    <div id="canvas">
+                        <svg id="canvas-svg">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" class="connection-arrow"></path>
+                                </marker>
+                                <marker id="arrow-critical" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" class="connection-arrow-critical"></path>
+                                </marker>
+                                <marker id="arrow-selected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" class="connection-arrow-selected"></path>
+                                </marker>
+                            </defs>
+                            <g id="connections-layer"></g>
+                            <g id="temp-layer"></g>
+                        </svg>
+
+                        <div id="connection-menu" class="connection-menu" hidden>
+                            <button type="button" data-conn-action="reverse">Развернуть</button>
+                            <button type="button" data-conn-action="delete" class="danger">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="canvas-empty" class="canvas-empty">
+                    <h3>Полотно пустое</h3>
+                    <p>Добавьте текстовый блок или активность и соедините их стрелками в порядке прохождения.
+                        Если из одного блока провести несколько стрелок, ветки пойдут параллельно.</p>
+                </div>
+
+                <div id="quest-stats" class="quest-stats" hidden>
+                    <span class="stats-label">Длительность квеста</span>
+                    <strong id="stats-total" class="stats-total">0 мин</strong>
+                    <div id="stats-details" class="stats-details"></div>
+                    <button type="button" id="timeline-toggle" class="btn btn-light btn-sm">Показать таймлайн</button>
+                </div>
+
+                <div id="timeline-panel" class="timeline-panel" hidden>
+                    <div class="timeline-header">
+                        <strong>Таймлайн квеста</strong>
+                        <span class="timeline-legend">
+                            <i class="legend-swatch critical"></i> самая длинная цепочка — определяет время квеста
+                            <i class="legend-swatch"></i> остальные блоки
+                        </span>
+                        <button type="button" id="timeline-close" class="modal-close" aria-label="Скрыть таймлайн">&times;</button>
+                    </div>
+                    <div id="timeline-body" class="timeline-body"></div>
+                </div>
+
+                <div id="canvas-hint" class="canvas-hint">
+                    Тяните за кружок справа на блоке, чтобы провести стрелку. Нажмите на стрелку, чтобы развернуть или удалить её.
+                </div>
+            </div>
+        </section>
+
+        <!-- Активности -->
+        <section id="section-2" class="section-content">
+            <div class="page">
+                <div class="section-header">
+                    <div>
+                        <h2>Активности</h2>
+                        <p class="section-sub">Задания и испытания, из которых складывается квест</p>
+                    </div>
+                    <div class="section-tools">
+                        <input type="search" id="act-search" class="search-input" placeholder="Поиск по активностям">
+                        <button id="add-act-btn" class="btn btn-green">Добавить активность</button>
+                    </div>
+                </div>
+                <div id="activities-list" class="cards-grid"></div>
+            </div>
+        </section>
+
+        <!-- Атрибуты и материалы -->
+        <section id="section-3" class="section-content">
+            <div class="page">
+                <div class="section-header">
+                    <div>
+                        <h2>Атрибуты и материалы</h2>
+                        <p class="section-sub">Реквизит и предметы, которые понадобятся для активностей</p>
+                    </div>
+                    <div class="section-tools">
+                        <input type="search" id="attr-search" class="search-input" placeholder="Поиск по атрибутам">
+                        <button id="add-attr-btn" class="btn btn-green">Добавить атрибут</button>
+                    </div>
+                </div>
+                <div id="attributes-list" class="cards-grid"></div>
+            </div>
+        </section>
+
+        <!-- Готовые сюжеты -->
+        <section id="section-4" class="section-content">
+            <div class="page">
+                <div class="section-header">
+                    <div>
+                        <h2>Готовые сюжеты</h2>
+                        <p class="section-sub">Сохранённые сценарии — откройте любой, чтобы продолжить работу</p>
+                    </div>
+                    <div class="section-tools">
+                        <input type="search" id="plot-search" class="search-input" placeholder="Поиск по сюжетам">
+                    </div>
+                </div>
+                <div id="plots-list" class="cards-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Выбор активности для полотна -->
+    <div id="select-act-modal" class="modal-overlay">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>Выберите активность</h3>
+                <button type="button" class="modal-close" data-close aria-label="Закрыть">&times;</button>
+            </div>
+            <input type="search" id="canvas-act-search" class="search-input search-full" placeholder="Поиск">
+            <div id="canvas-act-list" class="act-select-grid"></div>
+        </div>
+    </div>
+
+    <!-- Сохранение сюжета -->
+    <div id="save-plot-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="save-plot-heading">Сохранение сюжета</h3>
+                <button type="button" class="modal-close" data-close aria-label="Закрыть">&times;</button>
+            </div>
+            <form id="save-plot-form">
+                <div class="form-group">
+                    <label for="plot-title">Название сюжета <span class="required">*</span></label>
+                    <input type="text" id="plot-title" required maxlength="120" placeholder="Например: Квест в замке">
+                </div>
+                <div class="form-group">
+                    <label for="plot-desc">Описание</label>
+                    <textarea id="plot-desc" rows="3" placeholder="Коротко о чём этот сюжет"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-light" data-close>Отмена</button>
+                    <button type="button" id="save-plot-as-new" class="btn btn-light" hidden>Сохранить как новый</button>
+                    <button type="submit" id="save-plot-submit" class="btn btn-blue">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Активность: создание / редактирование -->
+    <div id="act-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="act-modal-title">Новая активность</h3>
+                <button type="button" class="modal-close" data-close aria-label="Закрыть">&times;</button>
+            </div>
+            <form id="act-form">
+                <div class="form-group">
+                    <label for="act-title">Название <span class="required">*</span></label>
+                    <input type="text" id="act-title" required maxlength="120" placeholder="Например: Найти ключ">
+                </div>
+                <div class="form-group">
+                    <label for="act-duration">Время на выполнение, мин <span class="required">*</span></label>
+                    <input type="number" id="act-duration" value="15" min="1" max="1440" required>
+                    <div id="act-duration-presets" class="duration-presets">
+                        <button type="button" data-min="5">5 мин</button>
+                        <button type="button" data-min="10">10 мин</button>
+                        <button type="button" data-min="15">15 мин</button>
+                        <button type="button" data-min="20">20 мин</button>
+                        <button type="button" data-min="30">30 мин</button>
+                        <button type="button" data-min="45">45 мин</button>
+                        <button type="button" data-min="60">1 ч</button>
+                        <button type="button" data-min="90">1,5 ч</button>
+                    </div>
+                    <small id="act-duration-hint" class="field-hint"></small>
+                </div>
+                <div class="form-group">
+                    <label for="act-desc">Описание</label>
+                    <textarea id="act-desc" rows="3" placeholder="Что нужно сделать участникам"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Необходимые атрибуты</label>
+                    <div id="act-items-select" class="items-checkbox-list"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-light" data-close>Отмена</button>
+                    <button type="submit" class="btn btn-green">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Атрибут: создание / редактирование -->
+    <div id="attr-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="attr-modal-title">Новый атрибут</h3>
+                <button type="button" class="modal-close" data-close aria-label="Закрыть">&times;</button>
+            </div>
+            <form id="attr-form">
+                <div class="form-group">
+                    <label>Фото</label>
+                    <label id="photo-drop" class="photo-drop" for="attr-photo">
+                        <img id="photo-preview" alt="" hidden>
+                        <span id="photo-placeholder" class="photo-placeholder">
+                            <strong>Выберите изображение</strong>
+                            <small>или перетащите его сюда (до 10 МБ)</small>
+                        </span>
+                    </label>
+                    <input type="file" id="attr-photo" accept="image/*" hidden>
+                    <button type="button" id="photo-remove" class="link-btn" hidden>Убрать фото</button>
+                </div>
+                <div class="form-group">
+                    <label for="attr-name">Название <span class="required">*</span></label>
+                    <input type="text" id="attr-name" required maxlength="120" placeholder="Например: Старинная карта">
+                </div>
+                <div class="form-group">
+                    <label for="attr-quantity">Количество, шт.</label>
+                    <input type="number" id="attr-quantity" value="1" min="1" max="100000">
+                </div>
+                <div class="form-group">
+                    <label for="attr-desc">Описание</label>
+                    <textarea id="attr-desc" rows="2" placeholder="Как выглядит, для чего нужен"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="attr-note">Заметка</label>
+                    <textarea id="attr-note" rows="2" placeholder="Где хранится, кто отвечает и т. п."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-light" data-close>Отмена</button>
+                    <button type="submit" class="btn btn-green">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Подтверждение действия -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="confirm-title">Подтверждение</h3>
+            </div>
+            <p id="confirm-text" class="confirm-text"></p>
+            <div class="modal-actions">
+                <button type="button" id="confirm-cancel" class="btn btn-light">Отмена</button>
+                <button type="button" id="confirm-ok" class="btn btn-danger">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script/script.js"></script>
+</body>
+</html>
